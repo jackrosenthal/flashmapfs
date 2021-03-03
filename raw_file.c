@@ -36,9 +36,25 @@ static int raw_file_read(char *buf, size_t n_bytes, off_t offset,
 	return n_bytes;
 }
 
+static int raw_file_write(const char *buf, size_t n_bytes, off_t offset,
+			  struct fuse_file_info *fi, void *param)
+{
+	struct raw_file_priv *priv = param;
+
+	if (offset > priv->size)
+		return 0;
+
+	if (n_bytes + offset >= priv->size)
+		n_bytes = priv->size - offset;
+
+	memcpy(priv->mem + offset, buf, n_bytes);
+	return n_bytes;
+}
+
 static struct file_ops ops = {
 	.get_size = get_size,
 	.read = raw_file_read,
+	.write = raw_file_write,
 };
 
 void add_raw_file(struct arena *arena, struct directory *basedir,
