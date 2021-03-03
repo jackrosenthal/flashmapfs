@@ -226,9 +226,36 @@ static int fmapfs_read(const char *path, char *buf, size_t n_bytes,
 					 entry->reg_file.param);
 }
 
+static int fmapfs_write(const char *path, const char *buf, size_t n_bytes,
+			off_t offset, struct fuse_file_info *fi)
+{
+	struct fmapfs_state *state = fuse_get_context()->private_data;
+	struct directory_entry *entry;
+
+	entry = route_lookup_path(state->rootdir, path);
+	if (!entry) {
+		LOG_ERR("Route not found for %s", path);
+		return -ENOENT;
+	}
+
+	if (!S_ISREG(entry->mode)) {
+		LOG_ERR("%s is not a regular file", path);
+		return -EISDIR;
+	}
+
+	if (!entry->reg_file.ops->write) {
+		LOG_ERR("%s does not support writing", path);
+		return -EOPNOTSUPP;
+	}
+
+	return entry->reg_file.ops->write(buf, n_bytes, offset, fi,
+					  entry->reg_file.param);
+}
+
 const struct fuse_operations fmapfs_ops = {
 	.getattr = fmapfs_getattr,
 	.readdir = fmapfs_readdir,
 	.open = fmapfs_open,
 	.read = fmapfs_read,
+	.write = fmapfs_write,
 };
