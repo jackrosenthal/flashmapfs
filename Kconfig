@@ -1,0 +1,140 @@
+menu "Compiler options"
+
+config COMPILER_COMMAND
+	string "Command or path to command for C compiler"
+	default "clang"
+	help
+	  The path to the C compiler, or the name of the compiler in
+	  the PATH.
+
+config COMPILER_DEBUG_SYMBOLS
+	bool "Enable debug symbols"
+	help
+	  Pass -ggdb3 to the compiler to enable debugging symbols.
+
+config COMPILER_DEBUG_SYMBOLS_FLAG
+	def_string "-ggdb3" if COMPILER_DEBUG_SYMBOLS
+
+choice
+	prompt "Optimization level"
+
+config COMPILER_OPT_3
+	bool "Optimize with -O3"
+
+config COMPILER_OPT_2
+	bool "Optimize with -O2"
+
+config COMPILER_OPT_1
+	bool "Optimize with -O1"
+
+config COMPILER_OPT_0
+	bool "Optimize with -O0"
+
+config COMPILER_OPT_SIZE
+	bool "Optimize with -Os"
+
+endchoice # Optimization level
+
+config COMPILER_OPT_FLAG
+	string
+	default "-O0" if COMPILER_OPT_0
+	default "-O1" if COMPILER_OPT_1
+	default "-O2" if COMPILER_OPT_2
+	default "-O3" if COMPILER_OPT_3
+	default "-Os" if COMPILER_OPT_SIZE
+
+config COMPILER_ASAN
+	bool "Enable the address sanitizer"
+	depends on !LINK_STATIC
+	help
+	  Pass -fsanitize=address to the compiler.
+
+config COMPILER_ASAN_FLAG
+	def_string "-fsanitize=address" if COMPILER_ASAN
+
+config COMPILER_WARNINGS_ARE_ERRORS
+	bool "Treat warnings as errors"
+	default y
+	help
+	  Treat all warnings as errors during compilation.
+
+config COMPILER_WARNINGS_ARE_ERRORS_FLAG
+	def_string "-Werror" if COMPILER_WARNINGS_ARE_ERRORS
+
+config LTO
+	bool "Enable LTO (link time optimization)"
+	default y if !COMPILER_DEBUG_SYMBOLS
+	help
+	  Pass -flto to the compiler and linker.
+
+config LTO_FLAG
+	def_string "-flto" if LTO
+
+config LINK_STATIC
+	bool "Enable static linking"
+	help
+	  Pass -static to the linker.
+
+config LINK_STATIC_FLAG
+	def_string "-static" if LINK_STATIC
+
+choice
+	prompt "libfmap"
+
+config FLASHMAP_INTERNAL
+	bool "Static link internal flashmap library"
+	help
+	  Static-link a provided minimal copy of libfmap under
+	  3rdparty/flashmap instead of dynamic linking to a copy on
+	  your system.
+
+config FLASHMAP_DYNLIB
+	bool "Dynamic link to libfmap.so"
+	depends on !LINK_STATIC
+	help
+	  Dynamic-link to libfmap installed on your system.
+
+endchoice # libfmap
+
+endmenu # Compiler options
+
+choice
+	prompt "Log Level"
+	default LOG_LEVEL_WARNING
+
+config LOG_LEVEL_QUIET
+	bool "Quiet, supress all logs"
+	select LOG_LEVEL_ERROR_ENABLED
+
+config LOG_LEVEL_ERROR
+	bool "Error"
+	select LOG_LEVEL_ERROR_ENABLED
+
+config LOG_LEVEL_WARNING
+	bool "Warning"
+	select LOG_LEVEL_ERROR_ENABLED
+	select LOG_LEVEL_WARNING_ENABLED
+
+config LOG_LEVEL_INFO
+	bool "Info"
+	select LOG_LEVEL_ERROR_ENABLED
+	select LOG_LEVEL_WARNING_ENABLED
+	select LOG_LEVEL_INFO_ENABLED
+
+config LOG_LEVEL_DEBUG
+	bool "Debug"
+	select LOG_LEVEL_ERROR_ENABLED
+	select LOG_LEVEL_WARNING_ENABLED
+	select LOG_LEVEL_INFO_ENABLED
+	select LOG_LEVEL_DEBUG_ENABLED
+
+endchoice
+
+config LOG_LEVEL_ERROR_ENABLED
+	bool
+config LOG_LEVEL_WARNING_ENABLED
+	bool
+config LOG_LEVEL_INFO_ENABLED
+	bool
+config LOG_LEVEL_DEBUG_ENABLED
+	bool
