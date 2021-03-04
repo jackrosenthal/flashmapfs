@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,6 +9,7 @@
 #include "gbb.h"
 #include "log.h"
 #include "route.h"
+#include "str_file.h"
 
 #define GBB_SIGNATURE "$GBB"
 
@@ -86,6 +88,10 @@ int setup_gbb_files(struct arena *arena, struct directory *basedir,
 		add_boolean_flag_file(arena, flags_dir, gbb_flags[i].filename,
 				      &header->flags, gbb_flags[i].bit);
 	}
+
+	add_str_file(arena, gbb_dir, "hwid",
+		     (char *)&gbb_mem[header->hwid.offset], header->hwid.size,
+		     true);
 
 	LOG_INF("GBB format detected and setup");
 
