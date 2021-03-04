@@ -58,6 +58,8 @@ static int fmap_load(uint8_t *image, size_t image_size, struct fmap **fmap_out)
 
 int fmapfs_load_image(struct fmapfs_state *state, const char *image_path)
 {
+	struct directory *areas_dir;
+
 	state->image_size = mmap_file_path(image_path, O_RDWR, &state->image);
 	if (state->image_size < 0) {
 		LOG_ERR("Failed to mmap image file: %s", image_path);
@@ -78,6 +80,21 @@ int fmapfs_load_image(struct fmapfs_state *state, const char *image_path)
 	add_str_file(&state->arena, state->rootdir->dir, "name",
 		     (char *)state->fmap->name, sizeof(state->fmap->name),
 		     true);
+
+	areas_dir = route_new_subdirectory(&state->arena, state->rootdir->dir,
+					   "areas");
+
+	for (size_t i = 0; i < state->fmap->nareas; i++) {
+		struct fmap_area *area = &state->fmap->areas[i];
+		char *area_name = arena_strndup(&state->arena,
+						(const char *)area->name,
+						sizeof(area->name));
+		struct directory *area_dir = route_new_subdirectory(
+			&state->arena, areas_dir, area_name);
+
+		add_raw_file(&state->arena, area_dir, "raw",
+			     &state->image[area->offset], area->size);
+	}
 
 	return 0;
 }
