@@ -1,6 +1,7 @@
 #include <errno.h>
 #include <fmap.h>
 #include <fuse.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -13,6 +14,7 @@
 #include "mmap_file.h"
 #include "route.h"
 #include "raw_file.h"
+#include "str_file.h"
 #include "version_file.h"
 
 static int fmap_load(uint8_t *image, size_t image_size, struct fmap **fmap_out)
@@ -73,6 +75,9 @@ int fmapfs_load_image(struct fmapfs_state *state, const char *image_path)
 			 state->fmap);
 	add_raw_file(&state->arena, state->rootdir->dir, "raw", state->fmap,
 		     fmap_size(state->fmap));
+	add_str_file(&state->arena, state->rootdir->dir, "name",
+		     (char *)state->fmap->name, sizeof(state->fmap->name),
+		     true);
 
 	return 0;
 }

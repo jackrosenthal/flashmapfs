@@ -48,7 +48,8 @@ ldflags-y += $(foreach lib,$(libs-y),$(shell \
 
 cflags-$(CONFIG_FLASHMAP_INTERNAL) += -I3rdparty/flashmap
 
-srcs-y := arena.c fs.c main.c mmap_file.c route.c raw_file.c version_file.c
+srcs-y := arena.c fs.c main.c mmap_file.c route.c raw_file.c str_file.c \
+	version_file.c
 srcs-$(CONFIG_FLASHMAP_INTERNAL) += 3rdparty/flashmap/fmap.c
 
 objfiles := $(patsubst %.c,$(OUTDIR)/%.o,$(srcs-y))
