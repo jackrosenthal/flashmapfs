@@ -87,6 +87,10 @@ struct directory_entry *route_lookup_path(struct directory_entry *root,
 		return NULL;
 
 	for (struct dir_list *ent = root->dir->entries; ent; ent = ent->next) {
+		/* Disallow partial-path matches */
+		if (word_len != strlen(ent->entry->name))
+			continue;
+
 		if (!strncmp(ent->entry->name, path, word_len))
 			return route_lookup_path(ent->entry, path + word_len);
 	}
