@@ -16,7 +16,8 @@ _ := $(shell KCONFIG_CONFIG=$(DOTCONFIG) \
 include $(CONFIG_OUT)
 
 cflags-y := -std=gnu17 -Wall -Wstrict-prototypes -Wmissing-prototypes \
-	-Wundef -Wmissing-declarations -Iinclude -include "$(AUTOHEADER)" \
+	-Wundef -Wmissing-declarations -Wno-address-of-packed-member \
+	-Iinclude -include "$(AUTOHEADER)" \
 	-DFUSE_USE_VERSION=35 \
 	$(CONFIG_COMPILER_DEBUG_SYMBOLS_FLAG) \
 	$(CONFIG_COMPILER_OPT_FLAG) \
@@ -48,8 +49,8 @@ ldflags-y += $(foreach lib,$(libs-y),$(shell \
 
 cflags-$(CONFIG_FLASHMAP_INTERNAL) += -I3rdparty/flashmap
 
-srcs-y := arena.c fs.c main.c mmap_file.c route.c raw_file.c str_file.c \
-	version_file.c
+srcs-y := arena.c boolean_flag_file.c fs.c main.c mmap_file.c route.c \
+	raw_file.c str_file.c version_file.c
 srcs-$(CONFIG_FLASHMAP_INTERNAL) += 3rdparty/flashmap/fmap.c
 
 objfiles := $(patsubst %.c,$(OUTDIR)/%.o,$(srcs-y))
