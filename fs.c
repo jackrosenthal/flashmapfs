@@ -96,13 +96,17 @@ int fmapfs_load_image(struct fmapfs_state *state, const char *image_path)
 		add_raw_file(&state->arena, area_dir, "raw",
 			     &state->image[area->offset], area->size);
 		add_boolean_flag_file(&state->arena, area_dir, "static",
-				      &area->flags, FMAP_AREA_STATIC);
+				      &area->flags,
+				      __builtin_ctz(FMAP_AREA_STATIC));
 		add_boolean_flag_file(&state->arena, area_dir, "compressed",
-				      &area->flags, FMAP_AREA_COMPRESSED);
+				      &area->flags,
+				      __builtin_ctz(FMAP_AREA_COMPRESSED));
 		add_boolean_flag_file(&state->arena, area_dir, "ro",
-				      &area->flags, FMAP_AREA_RO);
+				      &area->flags,
+				      __builtin_ctz(FMAP_AREA_RO));
 		add_boolean_flag_file(&state->arena, area_dir, "preserve",
-				      &area->flags, FMAP_AREA_PRESERVE);
+				      &area->flags,
+				      __builtin_ctz(FMAP_AREA_PRESERVE));
 	}
 
 	return 0;

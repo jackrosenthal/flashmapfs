@@ -12,8 +12,8 @@
 #include "route.h"
 
 struct flag_priv {
-	uint16_t *val;
-	uint16_t mask;
+	uint8_t *val;
+	uint8_t mask;
 };
 
 static size_t get_size(void *param)
@@ -76,13 +76,19 @@ static struct file_ops ops = {
 };
 
 void add_boolean_flag_file(struct arena *arena, struct directory *basedir,
-			   const char *name, uint16_t *val, uint16_t mask)
+			   const char *name, void *val, unsigned int bit)
 {
 	struct flag_priv *priv =
 		arena_calloc(arena, sizeof(struct flag_priv), 1);
 
+	/* assumes little endian */
+	while (bit >= 8) {
+		bit -= 8;
+		val++;
+	}
+
 	priv->val = val;
-	priv->mask = mask;
+	priv->mask = 1 << bit;
 
 	route_new_file(arena, basedir, name, &ops, priv);
 }
