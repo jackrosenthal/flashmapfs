@@ -138,3 +138,15 @@ config LOG_LEVEL_INFO_ENABLED
 	bool
 config LOG_LEVEL_DEBUG_ENABLED
 	bool
+
+menu "Extra Formats"
+
+config GBB
+	bool "GBB"
+	default y
+	help
+	  Enable detection and decoding of a GBB ("Google Binary
+	  Block") region, which encodes HWID, vboot signing keys, and
+	  development flags.
+
+endmenu # Extra Formats

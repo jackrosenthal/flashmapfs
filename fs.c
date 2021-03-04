@@ -3,6 +3,7 @@
 #include <fuse.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -11,6 +12,8 @@
 #include "arena.h"
 #include "boolean_flag_file.h"
 #include "fs.h"
+#include "gbb.h"
+#include "is_enabled.h"
 #include "log.h"
 #include "mmap_file.h"
 #include "route.h"
@@ -107,6 +110,12 @@ int fmapfs_load_image(struct fmapfs_state *state, const char *image_path)
 		add_boolean_flag_file(&state->arena, area_dir, "preserve",
 				      &area->flags,
 				      __builtin_ctz(FMAP_AREA_PRESERVE));
+
+		if (IS_ENABLED(CONFIG_GBB) && !strcmp(area_name, "GBB")) {
+			setup_gbb_files(&state->arena, area_dir,
+					&state->image[area->offset],
+					area->size);
+		}
 	}
 
 	return 0;
