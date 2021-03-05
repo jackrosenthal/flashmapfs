@@ -90,7 +90,7 @@ int setup_gbb_files(struct arena *arena, struct directory *basedir,
 	}
 
 	add_str_file(arena, gbb_dir, "hwid",
-		     (char *)&gbb_mem[header->hwid.offset], header->hwid.size,
+		     (char *)gbb_mem + header->hwid.offset, header->hwid.size,
 		     true);
 
 	LOG_INF("GBB format detected and setup");
