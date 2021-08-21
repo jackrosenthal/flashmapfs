@@ -1,0 +1,26 @@
+image: archlinux
+packages:
+  - clang
+  - fuse3
+  - gcc
+  - make
+  - pkg-config
+  - python
+sources:
+  - https://git.sr.ht/~jmr/flashmapfs
+tasks:
+  - configure-clang: |
+      mkdir -p ~/build/clang
+      echo 'CONFIG_COMPILER_COMMAND="clang"' >>~/build/clang/.config
+  - configure-clang-asan: |
+      mkdir -p ~/build/clang-asan
+      echo 'CONFIG_COMPILER_COMMAND="clang"' >>~/build/clang-asan/.config
+      echo 'CONFIG_COMPILER_ASAN=y' >>~/build/clang-asan/.config
+  - configure-gcc: |
+      mkdir -p ~/build/gcc
+      echo 'CONFIG_COMPILER_COMMAND="gcc"' >>~/build/gcc/.config
+  - build: |
+      cd ~/flashmapfs
+      for outdir in ~/build/{clang,clang-asan,gcc}; do
+          make OUTDIR=${outdir}
+      done
