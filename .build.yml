@@ -24,3 +24,6 @@ tasks:
       for outdir in ~/build/{clang,clang-asan,gcc}; do
           make OUTDIR=${outdir}
       done
+  - clang-format-check: |
+      find -name '*.[ch]' -not -path './3rdparty/*' \
+           -exec clang-format --dry-run --Werror '{}' +

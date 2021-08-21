@@ -30,8 +30,7 @@ static int bool_read(char *buf, size_t n_bytes, off_t offset,
 	if (offset >= 2)
 		return 0;
 
-	snprintf(val_buf, sizeof(val_buf), "%d\n",
-		 !!(*priv->val & priv->mask));
+	snprintf(val_buf, sizeof(val_buf), "%d\n", !!(*priv->val & priv->mask));
 
 	if (n_bytes + offset >= 2)
 		n_bytes = 2 - offset;
