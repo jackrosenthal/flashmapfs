@@ -25,5 +25,6 @@ tasks:
           make OUTDIR=${outdir}
       done
   - clang-format-check: |
+      cd ~/flashmapfs
       find -name '*.[ch]' -not -path './3rdparty/*' \
            -exec clang-format --dry-run --Werror '{}' +
