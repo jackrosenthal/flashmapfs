@@ -6,6 +6,7 @@ packages:
   - make
   - pkg-config
   - python
+  - python-pytest
 sources:
   - https://git.sr.ht/~jmr/flashmapfs
 tasks:
@@ -28,3 +29,6 @@ tasks:
       cd ~/flashmapfs
       find -name '*.[ch]' -not -path './3rdparty/*' \
            -exec clang-format --dry-run --Werror '{}' +
+  - run-tests: |
+      cd ~/flashmapfs
+      pytest -v --program="${HOME}/build/clang-asan"
