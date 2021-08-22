@@ -31,4 +31,4 @@ tasks:
            -exec clang-format --dry-run --Werror '{}' +
   - run-tests: |
       cd ~/flashmapfs
-      pytest -v --program="${HOME}/build/clang-asan"
+      pytest -v --program="${HOME}/build/clang-asan/fmapfs"
