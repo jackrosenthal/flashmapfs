@@ -18,7 +18,7 @@ tasks:
       mkdir -p ~/build/clang-asan
       echo 'CONFIG_COMPILER_COMMAND="clang"' >>~/build/clang-asan/.config
       echo 'CONFIG_COMPILER_ASAN=y' >>~/build/clang-asan/.config
-      echo 'CONFIG_COVERAGE=y' >>~/build/clang-asan/.config
+      echo 'CONFIG_COMPILER_COVERAGE=y' >>~/build/clang-asan/.config
   - configure-gcc: |
       mkdir -p ~/build/gcc
       echo 'CONFIG_COMPILER_COMMAND="gcc"' >>~/build/gcc/.config
