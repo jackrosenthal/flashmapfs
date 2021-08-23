@@ -20,18 +20,22 @@ choice
 
 config COMPILER_OPT_3
 	bool "Optimize with -O3"
+	depends on !COMPILER_COVERAGE
 
 config COMPILER_OPT_2
 	bool "Optimize with -O2"
+	depends on !COMPILER_COVERAGE
 
 config COMPILER_OPT_1
 	bool "Optimize with -O1"
+	depends on !COMPILER_COVERAGE
 
 config COMPILER_OPT_0
 	bool "Optimize with -O0"
 
 config COMPILER_OPT_SIZE
 	bool "Optimize with -Os"
+	depends on !COMPILER_COVERAGE
 
 endchoice # Optimization level
 
@@ -51,6 +55,19 @@ config COMPILER_ASAN
 
 config COMPILER_ASAN_FLAG
 	def_string "-fsanitize=address" if COMPILER_ASAN
+
+config COMPILER_COVERAGE
+	bool "Enable code coverage"
+	help
+	  Pass flags to the compiler to enable coverage reports.
+
+config COMPILER_PROFILE_FLAG
+	def_string "-fprofile-instr-generate"
+	depends on COMPILER_COVERAGE
+
+config COMPILER_COVERAGE_FLAG
+	def_string "-fcoverage-mapping"
+	depends on COMPILER_COVERAGE
 
 config COMPILER_WARNINGS_ARE_ERRORS
 	bool "Treat warnings as errors"

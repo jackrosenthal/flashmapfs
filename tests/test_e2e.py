@@ -71,12 +71,12 @@ def mounted_image(program_path, image_path, tmp_path):
 
 
 @pytest.fixture
-def mounted_elm_ap(elm_ap_image_file, program_path, tmp_path):
+def mounted_elm_ap(elm_ap_image_file, program_path, tmp_path, llvm_coverage):
     yield from mounted_image(program_path, elm_ap_image_file, tmp_path)
 
 
 @pytest.fixture
-def mounted_elm_ec(elm_ec_image_file, program_path, tmp_path):
+def mounted_elm_ec(elm_ec_image_file, program_path, tmp_path, llvm_coverage):
     yield from mounted_image(program_path, elm_ec_image_file, tmp_path)
 
 
@@ -98,7 +98,7 @@ def test_edit_version(mounted_elm_ap):
 
 
 def test_file_not_found(mounted_elm_ec):
-    path = (mounted_elm_ec / "blah" / "not" / "here")
+    path = mounted_elm_ec / "blah" / "not" / "here"
     assert not path.exists()
 
 
@@ -138,22 +138,22 @@ def test_fmap_regions(mounted_elm_ap):
 
 
 def test_raw_write_empty(mounted_elm_ap):
-    raw_file = mounted_elm_ap / 'areas' / 'RO_FRID' / 'raw'
+    raw_file = mounted_elm_ap / "areas" / "RO_FRID" / "raw"
     orig_data = raw_file.read_bytes()
     assert raw_file.stat().st_size == 256
 
-    raw_file.write_bytes(b'')
+    raw_file.write_bytes(b"")
     assert raw_file.stat().st_size == 256
     assert raw_file.read_bytes() == orig_data
 
 
 def test_raw_write_small(mounted_elm_ap):
-    raw_file = mounted_elm_ap / 'areas' / 'RO_FRID' / 'raw'
+    raw_file = mounted_elm_ap / "areas" / "RO_FRID" / "raw"
     orig_data = raw_file.read_bytes()
     assert raw_file.stat().st_size == 256
     assert len(orig_data) == 256
 
-    data = bytes([0xde, 0xad, 0xbe, 0xef])
+    data = bytes([0xDE, 0xAD, 0xBE, 0xEF])
     raw_file.write_bytes(data)
     assert raw_file.stat().st_size == 256
 
@@ -162,20 +162,20 @@ def test_raw_write_small(mounted_elm_ap):
 
 
 def test_raw_write_exact(mounted_elm_ap):
-    raw_file = mounted_elm_ap / 'areas' / 'RO_FRID' / 'raw'
+    raw_file = mounted_elm_ap / "areas" / "RO_FRID" / "raw"
     assert raw_file.stat().st_size == 256
 
-    data = bytes([0xde, 0xad, 0xbe, 0xef] * 64)
+    data = bytes([0xDE, 0xAD, 0xBE, 0xEF] * 64)
     raw_file.write_bytes(data)
     assert raw_file.stat().st_size == 256
     assert raw_file.read_bytes() == data
 
 
 def test_raw_write_too_big(mounted_elm_ap):
-    raw_file = mounted_elm_ap / 'areas' / 'RO_FRID' / 'raw'
+    raw_file = mounted_elm_ap / "areas" / "RO_FRID" / "raw"
     assert raw_file.stat().st_size == 256
 
-    data = bytes([0xde, 0xad, 0xbe, 0xef] * 64 + [0xaa])
+    data = bytes([0xDE, 0xAD, 0xBE, 0xEF] * 64 + [0xAA])
     with pytest.raises(OSError):
         raw_file.write_bytes(data)
     assert raw_file.stat().st_size == 256
@@ -183,16 +183,16 @@ def test_raw_write_too_big(mounted_elm_ap):
 
 
 def test_gbb_hwid(mounted_elm_ap):
-    hwid_file = mounted_elm_ap / 'areas' / 'GBB' / 'gbb-data' / 'hwid'
-    assert hwid_file.read_text() == 'ELM A1B-C2D-A3A\n'
+    hwid_file = mounted_elm_ap / "areas" / "GBB" / "gbb-data" / "hwid"
+    assert hwid_file.read_text() == "ELM A1B-C2D-A3A\n"
 
 
 def test_gbb_hwid_edit(mounted_elm_ap):
-    hwid_file = mounted_elm_ap / 'areas' / 'GBB' / 'gbb-data' / 'hwid'
-    new_hwid = 'ELM-ZZCR C3B-A4D-D1A-D5F\n'
+    hwid_file = mounted_elm_ap / "areas" / "GBB" / "gbb-data" / "hwid"
+    new_hwid = "ELM-ZZCR C3B-A4D-D1A-D5F\n"
     hwid_file.write_text(new_hwid)
     assert hwid_file.read_text() == new_hwid
 
     new_hwid_no_newline = new_hwid.rstrip()
-    gbb_raw_file = mounted_elm_ap / 'areas' / 'GBB' / 'raw'
-    assert new_hwid_no_newline.encode('utf-8') in gbb_raw_file.read_bytes()
+    gbb_raw_file = mounted_elm_ap / "areas" / "GBB" / "raw"
+    assert new_hwid_no_newline.encode("utf-8") in gbb_raw_file.read_bytes()
