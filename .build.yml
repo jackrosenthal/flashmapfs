@@ -34,7 +34,7 @@ tasks:
   - run-tests: |
       cd ~/flashmapfs
       build=~/build/clang-asan
-      pytest -v --program="${bulid}/fmapfs" --llvm-coverage-out="${build}/cov.profdata"
+      pytest -v --program="${build}/fmapfs" --llvm-coverage-out="${build}/cov.profdata"
   - coverage-summary: |
       build=~/build/clang-asan
       llvm-cov report "${build}/fmapfs" -instr-profile="${build}/cov.profdata"
