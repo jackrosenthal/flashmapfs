@@ -196,3 +196,46 @@ def test_gbb_hwid_edit(mounted_elm_ap):
     new_hwid_no_newline = new_hwid.rstrip()
     gbb_raw_file = mounted_elm_ap / "areas" / "GBB" / "raw"
     assert new_hwid_no_newline.encode("utf-8") in gbb_raw_file.read_bytes()
+
+
+GBB_BITS = {
+    "dev-screen-short-delay": 0,
+    "load-option-roms": 1,
+    "enable-alternate-os": 2,
+    "force-dev-mode": 3,
+    "force-dev-boot-usb": 4,
+    "disable-fw-rollback-check": 5,
+    "enter-triggers-tonorm": 6,
+    "force-dev-boot-altfw": 7,
+    "running-faft": 8,
+    "disable-ec-software-sync": 9,
+    "default-boot-altfw": 10,
+    "disable-auxfw-software-sync": 11,
+    "disable-shutdown-on-lid-close": 12,
+    "force-manual-recovery": 14,
+    "disable-fwmp": 15,
+    "enable-udc": 16,
+}
+
+
+def read_gbb(image):
+    flags = 0
+    gbb_flags_dir = image / "areas" / "GBB" / "gbb-data" / "flags"
+    for flag in gbb_flags_dir.iterdir():
+        val = flag.read_text()
+        if val == "1\n":
+            flags |= 1 << GBB_BITS[flag.name]
+        else:
+            assert val == "0\n"
+    return flags
+
+
+def test_gbb_flags_get(mounted_elm_ap):
+    assert read_gbb(mounted_elm_ap) == 0x2B9
+
+
+def test_gbb_flags_set(mounted_elm_ap):
+    flags_dir = mounted_elm_ap / "areas" / "GBB" / "gbb-data" / "flags"
+    (flags_dir / "running-faft").write_text("1")
+    (flags_dir / "disable-ec-software-sync").write_text("0\n")
+    assert read_gbb(mounted_elm_ap) == 0x1B9
