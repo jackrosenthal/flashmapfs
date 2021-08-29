@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 	argv[i + 1] = NULL;
 
 	if (fmapfs_load_image(&fs_state, image_path) < 0)
-		return 1;
+		return 2;
 
 	rv = fuse_main(argc - 1, argv, &fmapfs_ops, &fs_state);
 	arena_free(&fs_state.arena);
