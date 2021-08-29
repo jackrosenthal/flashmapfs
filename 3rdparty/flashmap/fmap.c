@@ -125,7 +125,7 @@ long int fmap_find(const uint8_t *image, unsigned int image_len)
 {
 	long int ret = -1;
 
-	if ((image == NULL) || (image_len == 0))
+	if ((image == NULL) || (image_len < sizeof(struct fmap)))
 		return -1;
 
 	if (popcnt(image_len) == 1)

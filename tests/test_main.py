@@ -62,7 +62,7 @@ def test_option_args(program_path):
     [
         (b"",),
         (b"\xff",),
-        # (b"__FMAP",),  # FIXME: segfault
+        (b"__FMAP",),
         (b"__FMAP__",),
         (b"\xff\xff\xff\xff\xff\xff\xff\xff__FMAP__",),
         (
