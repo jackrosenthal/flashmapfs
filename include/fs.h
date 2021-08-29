@@ -10,7 +10,7 @@ struct fmap;
 struct directory_entry;
 struct fmapfs_state {
 	void *image;
-	size_t image_size;
+	ssize_t image_size;
 	struct fmap *fmap;
 	struct directory_entry *rootdir;
 	struct arena arena;

@@ -87,3 +87,18 @@ def test_bad_fmap(program_path, flash_contents, tmp_path):
         encoding="utf-8",
     )
     assert result.returncode == 2
+
+
+def test_image_does_not_exist(program_path, tmp_path):
+    mnt = tmp_path / "mount"
+    mnt.mkdir()
+
+    result = subprocess.run(
+        [program_path, "/file/does/not/exist.bin", mnt],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        stdin=subprocess.DEVNULL,
+        timeout=5,
+        encoding="utf-8",
+    )
+    assert result.returncode == 2
