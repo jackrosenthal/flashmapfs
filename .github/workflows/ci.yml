@@ -28,14 +28,15 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: 3.11
+      - uses: KyleMayes/install-llvm-action@v1
+        if: matrix.compiler == 'Clang'
+        with:
+          version: "16.0.6"
+          env: true
       - uses: egor-tensin/setup-gcc@v1
         if: matrix.compiler == 'GCC'
         with:
           version: "12"
-      - uses: egor-tensin/setup-clang@v1
-        if: matrix.compiler == 'Clang'
-        with:
-          version: "15"
       - name: Run make
         run: make
       - name: Check binary is runnable
@@ -52,9 +53,10 @@ jobs:
           python-version: 3.11
       - name: "Install pytest"
         run: "pip install 'pytest~=7.4'"
-      - uses: egor-tensin/setup-clang@v1
+      - uses: KyleMayes/install-llvm-action@v1
         with:
-          version: "15"
+          version: "16.0.6"
+          env: true
       - name: "Configure build"
         run: |
           mkdir -p build
