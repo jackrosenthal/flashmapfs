@@ -1,0 +1,67 @@
+name: "Build and Run Tests"
+on:
+  - push
+  - pull_request
+jobs:
+  clang-format-check:
+    name: Check source code is formatted using clang-format
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v4
+    - name: Run clang-format check
+      uses: jidicula/clang-format-action@v4.11.0
+      with:
+        clang-format-version: "16"
+  build-check:
+    name: "Check Build (${{ matrix.name }})"
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        - name: "GCC 12"
+          toolchain-package: egor-tensin/setup-gcc@v1
+          toolchain-version: "12"
+        - name: "Clang 15"
+          toolchain-package: egor-tensin/setup-clang@v1
+          toolchain-version: "15"
+    steps:
+      - name: Install libfuse3-dev
+        run: sudo apt-get install libfuse3-dev
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+      - uses: ${{ matrix.toolchain-package }}
+        with:
+          version: ${{ matrix.toolchain-version }}
+      - name: Run make
+        run: make
+      - name: Check binary is runnable
+        run: build/fmapfs --help
+  run-tests:
+    name: "Run tests with ASAN and coverage"
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Install libfuse3-dev
+        run: sudo apt-get install libfuse3-dev
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+      - name: "Install pytest"
+        run: "pip install 'pytest~=7.4'"
+      - uses: egor-tensin/setup-clang@v1
+        with:
+          version: "15"
+      - name: "Configure build"
+        run: |
+          mkdir -p build
+          echo "CONFIG_COMPILER_ASAN=y" >> build/.config
+          echo "CONFIG_COMPILER_COVERAGE=y" >> build/.config
+      - name: Run make
+        run: make
+      - name: Run tests
+        run: pytest --llvm-coverage-out build/cov.profdata
+      - uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: build/cov.profdata
