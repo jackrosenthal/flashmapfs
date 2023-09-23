@@ -13,16 +13,13 @@ jobs:
       with:
         clang-format-version: "16"
   build-check:
-    name: "Check Build (${{ matrix.name }})"
+    name: "Check Build"
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        - name: "GCC 12"
-          toolchain-package: egor-tensin/setup-gcc@v1
-          toolchain-version: "12"
-        - name: "Clang 15"
-          toolchain-package: egor-tensin/setup-clang@v1
-          toolchain-version: "15"
+        compiler:
+          - "GCC"
+          - "Clang"
     steps:
       - name: Install libfuse3-dev
         run: sudo apt-get install libfuse3-dev
@@ -30,9 +27,14 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: 3.11
-      - uses: ${{ matrix.toolchain-package }}
+      - uses: egor-tensin/setup-gcc@v1
+        if: matrix.compiler == "GCC"
         with:
-          version: ${{ matrix.toolchain-version }}
+          version: "12"
+      - uses: egor-tensin/setup-clang@v1
+        if: matrix.compiler == "Clang"
+        with:
+          version: "15"
       - name: Run make
         run: make
       - name: Check binary is runnable
