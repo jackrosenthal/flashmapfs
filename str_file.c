@@ -1,4 +1,3 @@
-#include <fuse.h>
 #include <fmap.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -6,8 +5,10 @@
 #include <string.h>
 #include <sys/types.h>
 
+#include <fuse.h>
+#include <fuse_log.h>
+
 #include "arena.h"
-#include "log.h"
 #include "route.h"
 #include "str_file.h"
 
@@ -43,7 +44,9 @@ static int str_file_read(char *buf, size_t n_bytes, off_t offset,
 		memcpy(buf, priv->str + offset, n_bytes - 1);
 		buf[n_bytes - 1] = '\n';
 	} else {
-		LOG_DBG("Newline not added (offset=%zu, n_bytes=%zu, size=%zu)",
+		fuse_log(
+			FUSE_LOG_DEBUG,
+			"Newline not added (offset=%zu, n_bytes=%zu, size=%zu)",
 			offset, n_bytes, size);
 		memcpy(buf, priv->str + offset, n_bytes);
 	}
@@ -64,7 +67,7 @@ static int str_file_write(const char *buf, size_t n_bytes, off_t offset,
 	len = strnlen(buf, n_bytes);
 
 	if (priv->add_newline && len && buf[len - 1] == '\n') {
-		LOG_DBG("chomped newline on write");
+		fuse_log(FUSE_LOG_DEBUG, "chomped newline on write");
 		n_bytes -= 1;
 		newline_chomped = true;
 	}

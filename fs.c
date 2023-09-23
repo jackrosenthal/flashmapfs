@@ -1,6 +1,4 @@
 #include <errno.h>
-#include <fmap.h>
-#include <fuse.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -9,12 +7,14 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <fmap.h>
+#include <fuse.h>
+#include <fuse_log.h>
+
 #include "arena.h"
 #include "boolean_flag_file.h"
 #include "fs.h"
 #include "gbb.h"
-#include "is_enabled.h"
-#include "log.h"
 #include "mmap_file.h"
 #include "route.h"
 #include "raw_file.h"
@@ -28,29 +28,35 @@ static int fmap_load(uint8_t *image, size_t image_size, struct fmap **fmap_out)
 
 	fmap_offset = fmap_find(image, image_size);
 	if (fmap_offset < 0) {
-		LOG_ERR("Unable to find valid FMAP structure");
+		fuse_log(FUSE_LOG_ERR, "Unable to find valid FMAP structure");
 		return -1;
 	}
 
 	fmap = (struct fmap *)(&image[fmap_offset]);
 
-	LOG_DBG("FMAP found at offset 0x%08x!", (unsigned)fmap_offset);
-	LOG_DBG("FMAP signature: %-.*s", (int)sizeof(fmap->signature),
-		(char *)fmap->signature);
-	LOG_DBG("FMAP version %hhu.%hhu", fmap->ver_major, fmap->ver_minor);
-	LOG_DBG("FMAP base: 0x%016lx", fmap->base);
-	LOG_DBG("FMAP size: 0x%08x", fmap->size);
-	LOG_DBG("FMAP name: %-.*s", (int)sizeof(fmap->name),
-		(char *)fmap->name);
+	fuse_log(FUSE_LOG_DEBUG, "FMAP found at offset 0x%08x!",
+		 (unsigned)fmap_offset);
+	fuse_log(FUSE_LOG_DEBUG, "FMAP signature: %-.*s",
+		 (int)sizeof(fmap->signature), (char *)fmap->signature);
+	fuse_log(FUSE_LOG_DEBUG, "FMAP version %hhu.%hhu", fmap->ver_major,
+		 fmap->ver_minor);
+	fuse_log(FUSE_LOG_DEBUG, "FMAP base: 0x%016lx", fmap->base);
+	fuse_log(FUSE_LOG_DEBUG, "FMAP size: 0x%08x", fmap->size);
+	fuse_log(FUSE_LOG_DEBUG, "FMAP name: %-.*s", (int)sizeof(fmap->name),
+		 (char *)fmap->name);
 
 	for (size_t i = 0; i < fmap->nareas; i++) {
 		struct fmap_area *area = &fmap->areas[i];
 
-		LOG_DBG("FMAP region %-.*s: offset=0x%08x, size=0x%08x, flags=0x%x",
+		fuse_log(
+			FUSE_LOG_DEBUG,
+			"FMAP region %-.*s: offset=0x%08x, size=0x%08x, flags=0x%x",
 			(int)sizeof(area->name), (char *)area->name,
 			area->offset, area->size, area->flags);
 		if (area->offset + area->size > image_size) {
-			LOG_ERR("FMAP region %-.*s is located outside of the image",
+			fuse_log(
+				FUSE_LOG_ERR,
+				"FMAP region %-.*s is located outside of the image",
 				(int)sizeof(area->name), (char *)area->name);
 			return -1;
 		}
@@ -66,12 +72,14 @@ int fmapfs_load_image(struct fmapfs_state *state, const char *image_path)
 
 	state->image_size = mmap_file_path(image_path, O_RDWR, &state->image);
 	if (state->image_size < 0) {
-		LOG_ERR("Failed to mmap image file: %s", image_path);
+		fuse_log(FUSE_LOG_ERR, "Failed to mmap image file: %s",
+			 image_path);
 		return -1;
 	}
 
 	if (fmap_load(state->image, state->image_size, &state->fmap) < 0) {
-		LOG_ERR("Failed to load fmap from image file: %s", image_path);
+		fuse_log(FUSE_LOG_ERR,
+			 "Failed to load fmap from image file: %s", image_path);
 		munmap(state->image, state->image_size);
 		return -1;
 	}
@@ -111,7 +119,7 @@ int fmapfs_load_image(struct fmapfs_state *state, const char *image_path)
 				      &area->flags,
 				      __builtin_ctz(FMAP_AREA_PRESERVE));
 
-		if (IS_ENABLED(CONFIG_GBB) && !strcmp(area_name, "GBB")) {
+		if (!strcmp(area_name, "GBB")) {
 			setup_gbb_files(&state->arena, area_dir,
 					state->image + area->offset,
 					area->size);
@@ -166,7 +174,7 @@ static int fmapfs_getattr(const char *path, struct stat *st,
 
 	entry = route_lookup_path(state->rootdir, path);
 	if (!entry) {
-		LOG_ERR("Route not found for %s", path);
+		fuse_log(FUSE_LOG_ERR, "Route not found for %s", path);
 		return -ENOENT;
 	}
 
@@ -185,12 +193,12 @@ static int fmapfs_readdir(const char *path, void *buffer,
 
 	entry = route_lookup_path(state->rootdir, path);
 	if (!entry) {
-		LOG_ERR("Route not found for %s", path);
+		fuse_log(FUSE_LOG_ERR, "Route not found for %s", path);
 		return -ENOENT;
 	}
 
 	if (!S_ISDIR(entry->mode)) {
-		LOG_ERR("%s is not a directory", path);
+		fuse_log(FUSE_LOG_ERR, "%s is not a directory", path);
 		return -ENOTDIR;
 	}
 
@@ -220,24 +228,24 @@ static int fmapfs_open(const char *path, struct fuse_file_info *fi)
 
 	entry = route_lookup_path(state->rootdir, path);
 	if (!entry) {
-		LOG_ERR("Route not found for %s", path);
+		fuse_log(FUSE_LOG_ERR, "Route not found for %s", path);
 		return -ENOENT;
 	}
 
 	if (!S_ISREG(entry->mode)) {
-		LOG_ERR("%s is not a regular file", path);
+		fuse_log(FUSE_LOG_ERR, "%s is not a regular file", path);
 		return -EISDIR;
 	}
 
 	accmode = fi->flags & O_ACCMODE;
 
 	if ((accmode & O_RDONLY) && !entry->reg_file.ops->read) {
-		LOG_ERR("No read operation on %s", path);
+		fuse_log(FUSE_LOG_ERR, "No read operation on %s", path);
 		return -EACCES;
 	}
 
 	if ((accmode & O_WRONLY) && !entry->reg_file.ops->write) {
-		LOG_ERR("No write operation on %s", path);
+		fuse_log(FUSE_LOG_ERR, "No write operation on %s", path);
 		return -EACCES;
 	}
 
@@ -252,17 +260,17 @@ static int fmapfs_read(const char *path, char *buf, size_t n_bytes,
 
 	entry = route_lookup_path(state->rootdir, path);
 	if (!entry) {
-		LOG_ERR("Route not found for %s", path);
+		fuse_log(FUSE_LOG_ERR, "Route not found for %s", path);
 		return -ENOENT;
 	}
 
 	if (!S_ISREG(entry->mode)) {
-		LOG_ERR("%s is not a regular file", path);
+		fuse_log(FUSE_LOG_ERR, "%s is not a regular file", path);
 		return -EISDIR;
 	}
 
 	if (!entry->reg_file.ops->read) {
-		LOG_ERR("%s does not support reading", path);
+		fuse_log(FUSE_LOG_ERR, "%s does not support reading", path);
 		return -EOPNOTSUPP;
 	}
 
@@ -278,17 +286,17 @@ static int fmapfs_write(const char *path, const char *buf, size_t n_bytes,
 
 	entry = route_lookup_path(state->rootdir, path);
 	if (!entry) {
-		LOG_ERR("Route not found for %s", path);
+		fuse_log(FUSE_LOG_ERR, "Route not found for %s", path);
 		return -ENOENT;
 	}
 
 	if (!S_ISREG(entry->mode)) {
-		LOG_ERR("%s is not a regular file", path);
+		fuse_log(FUSE_LOG_ERR, "%s is not a regular file", path);
 		return -EISDIR;
 	}
 
 	if (!entry->reg_file.ops->write) {
-		LOG_ERR("%s does not support writing", path);
+		fuse_log(FUSE_LOG_ERR, "%s does not support writing", path);
 		return -EOPNOTSUPP;
 	}
 

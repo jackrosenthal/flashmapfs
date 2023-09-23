@@ -1,13 +1,13 @@
-#include <fuse.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include <fuse.h>
+
 #include "arena.h"
 #include "array_size.h"
 #include "fs.h"
-#include "log.h"
 
 static void show_help(char *progname)
 {

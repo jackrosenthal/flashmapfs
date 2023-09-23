@@ -6,7 +6,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "log.h"
+#include <fuse_log.h>
+
 #include "mmap_file.h"
 
 static ssize_t fd_seek_size(int fd)
@@ -32,13 +33,15 @@ ssize_t mmap_file_path(const char *path, int flags, void **ptr_out)
 
 	fd = open(path, flags, 0666);
 	if (fd < 0) {
-		LOG_ERR("Unable to open %s: %s", path, strerror(errno));
+		fuse_log(FUSE_LOG_ERR, "Unable to open %s: %s", path,
+			 strerror(errno));
 		return -1;
 	}
 
 	file_size = fd_seek_size(fd);
 	if (file_size < 0) {
-		LOG_ERR("Unable to seek on %s: %s", path, strerror(errno));
+		fuse_log(FUSE_LOG_ERR, "Unable to seek on %s: %s", path,
+			 strerror(errno));
 		goto exit;
 	}
 
@@ -49,7 +52,8 @@ ssize_t mmap_file_path(const char *path, int flags, void **ptr_out)
 
 	buf = mmap(NULL, file_size, mmap_prot, MAP_SHARED, fd, 0);
 	if (buf == MAP_FAILED) {
-		LOG_ERR("Failed to mmap %s: %s", path, strerror(errno));
+		fuse_log(FUSE_LOG_ERR, "Failed to mmap %s: %s", path,
+			 strerror(errno));
 		file_size = -1;
 		goto exit;
 	}

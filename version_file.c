@@ -1,12 +1,13 @@
-#include <fuse.h>
-#include <fmap.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 
+#include <fmap.h>
+#include <fuse.h>
+#include <fuse_log.h>
+
 #include "arena.h"
-#include "log.h"
 #include "route.h"
 #include "version_file.h"
 
@@ -17,7 +18,8 @@ static int version_read(char *buf, size_t n_bytes, off_t offset,
 	size_t ver_len;
 	char ver_buf[9] = { 0 };
 
-	LOG_DBG("read %zu bytes, at offset %zu", n_bytes, offset);
+	fuse_log(FUSE_LOG_DEBUG, "read %zu bytes, at offset %zu", n_bytes,
+		 offset);
 
 	snprintf(ver_buf, sizeof(ver_buf), "%hhu.%hhu\n", fmap->ver_major,
 		 fmap->ver_minor);
@@ -28,7 +30,7 @@ static int version_read(char *buf, size_t n_bytes, off_t offset,
 
 	if (n_bytes + offset >= ver_len) {
 		n_bytes = ver_len - offset;
-		LOG_DBG("adjust n_bytes to %zu", n_bytes);
+		fuse_log(FUSE_LOG_DEBUG, "adjust n_bytes to %zu", n_bytes);
 	}
 
 	memcpy(buf, ver_buf + offset, n_bytes);

@@ -8,7 +8,6 @@
 
 #include "arena.h"
 #include "boolean_flag_file.h"
-#include "log.h"
 #include "route.h"
 
 struct flag_priv {
@@ -53,8 +52,8 @@ static int bool_write(const char *buf, size_t n_bytes, off_t offset,
 		return 0;
 
 	val = tolower(buf[0]);
-	LOG_DBG("boolean set \"%-.*s\"", (int)n_bytes, buf);
-	LOG_DBG("current flags %04X", *priv->val);
+	fuse_log(FUSE_LOG_DEBUG, "boolean set \"%-.*s\"", (int)n_bytes, buf);
+	fuse_log(FUSE_LOG_DEBUG, "current flags %04X", *priv->val);
 
 	if (val == '0' || val == 't' || val == 'y')
 		*priv->val &= ~priv->mask;
@@ -63,7 +62,7 @@ static int bool_write(const char *buf, size_t n_bytes, off_t offset,
 	else
 		return 0;
 
-	LOG_DBG("new flags %04X", *priv->val);
+	fuse_log(FUSE_LOG_DEBUG, "new flags %04X", *priv->val);
 
 	return n_bytes;
 }

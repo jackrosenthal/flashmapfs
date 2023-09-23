@@ -3,8 +3,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <fuse_log.h>
+
 #include "arena.h"
-#include "log.h"
 #include "route.h"
 
 struct directory_entry *route_new_root(struct arena *arena)
@@ -75,7 +76,7 @@ struct directory_entry *route_lookup_path(struct directory_entry *root,
 {
 	size_t word_len;
 
-	LOG_DBG("Lookup %s in %s", path, root->name);
+	fuse_log(FUSE_LOG_DEBUG, "Lookup %s in %s", path, root->name);
 
 	path += strspn(path, "/");
 	word_len = strcspn(path, "/");

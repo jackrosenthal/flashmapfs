@@ -3,11 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <fuse_log.h>
+
 #include "arena.h"
 #include "array_size.h"
 #include "boolean_flag_file.h"
 #include "gbb.h"
-#include "log.h"
 #include "route.h"
 #include "str_file.h"
 
@@ -70,13 +71,14 @@ int setup_gbb_files(struct arena *arena, struct directory *basedir,
 	struct directory *flags_dir;
 
 	if (gbb_size < sizeof(struct gbb_header)) {
-		LOG_ERR("GBB area is too small to be a GBB partition");
+		fuse_log(FUSE_LOG_ERR,
+			 "GBB area is too small to be a GBB partition");
 		return -1;
 	}
 
 	if (strncmp((const char *)gbb_mem, GBB_SIGNATURE,
 		    __builtin_strlen(GBB_SIGNATURE))) {
-		LOG_ERR("GBB header has invalid signature");
+		fuse_log(FUSE_LOG_ERR, "GBB header has invalid signature");
 		return -1;
 	}
 
@@ -93,7 +95,7 @@ int setup_gbb_files(struct arena *arena, struct directory *basedir,
 		     (char *)gbb_mem + header->hwid.offset, header->hwid.size,
 		     true);
 
-	LOG_INF("GBB format detected and setup");
+	fuse_log(FUSE_LOG_INFO, "GBB format detected and setup");
 
 	return 0;
 }
