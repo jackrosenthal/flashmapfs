@@ -31,7 +31,7 @@ jobs:
       - uses: KyleMayes/install-llvm-action@v1
         if: matrix.compiler == 'Clang'
         with:
-          version: "16.0.6"
+          version: "16.0.0"
           env: true
       - uses: egor-tensin/setup-gcc@v1
         if: matrix.compiler == 'GCC'
@@ -55,7 +55,7 @@ jobs:
         run: "pip install 'pytest~=7.4'"
       - uses: KyleMayes/install-llvm-action@v1
         with:
-          version: "16.0.6"
+          version: "16.0.0"
           env: true
       - name: "Configure build"
         run: |
