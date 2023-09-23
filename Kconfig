@@ -1,12 +1,5 @@
 menu "Compiler options"
 
-config COMPILER_COMMAND
-	string "Command or path to command for C compiler"
-	default "cc"
-	help
-	  The path to the C compiler, or the name of the compiler in
-	  the PATH.
-
 config COMPILER_DEBUG_SYMBOLS
 	bool "Enable debug symbols"
 	help

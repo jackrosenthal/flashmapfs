@@ -1,4 +1,5 @@
 OUTDIR ?= build
+CC ?= cc
 _create_outdir := $(shell [ -d $(OUTDIR) ] || mkdir -p $(OUTDIR))
 
 # Recursive wildcard function, stackoverflow.com/questions/2483182
@@ -77,10 +78,10 @@ endif
 DEPFLAGS = -MMD -MP -MF $@.d
 
 cmd_c_to_o_name = CC
-cmd_c_to_o = $(CONFIG_COMPILER_COMMAND) $(cflags-y) $(DEPFLAGS) -c $< -o $@
+cmd_c_to_o = $(CC) $(cflags-y) $(DEPFLAGS) -c $< -o $@
 
 cmd_o_to_elf_name = LD
-cmd_o_to_elf = $(CONFIG_COMPILER_COMMAND) $(ldflags-y) $^ -o $@
+cmd_o_to_elf = $(CC) $(ldflags-y) $^ -o $@
 
 cmd_clean_name = CLEAN
 cmd_clean = rm -rf $(1)
