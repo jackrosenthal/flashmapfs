@@ -19,6 +19,7 @@ jobs:
     strategy:
       matrix:
         compiler:
+          - "GCC"
           - "Clang"
     steps:
       - name: Install libfuse3-dev
