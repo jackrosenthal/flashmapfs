@@ -71,7 +71,14 @@ jobs:
           ninja-version: 1.11.1
       - name: Run tests
         run: pytest --llvm-coverage-out build/cov.profdata
+      - name: Convert coverage data to lcov
+        run: |
+          llvm-cov export \
+            -instr-profile build/cov.profdata \
+            -format lcov \
+            -ignore-filename-regex 3rdparty \
+            build/fmapfs > build/lcov.info
       - uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: build/cov.profdata
+          files: build/lcov.info
