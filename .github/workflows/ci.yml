@@ -37,8 +37,12 @@ jobs:
         if: matrix.compiler == 'GCC'
         with:
           version: "12"
-      - name: Run make
-        run: make
+      - uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: build
+          directory: build
+          meson-version: 1.2.1
+          ninja-version: 1.11.1
       - name: Check binary is runnable
         run: build/fmapfs --help
   run-tests:
@@ -58,13 +62,13 @@ jobs:
           version: "16.0.4"
           ubuntu-version: "22.04"
           env: true
-      - name: "Configure build"
-        run: |
-          mkdir -p build
-          echo "CONFIG_COMPILER_ASAN=y" >> build/.config
-          echo "CONFIG_COMPILER_COVERAGE=y" >> build/.config
-      - name: Run make
-        run: make
+      - uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: build
+          directory: build
+          setup-options: -Db_coverage=true -Db_sanitize=address
+          meson-version: 1.2.1
+          ninja-version: 1.11.1
       - name: Run tests
         run: pytest --llvm-coverage-out build/cov.profdata
       - uses: codecov/codecov-action@v3
